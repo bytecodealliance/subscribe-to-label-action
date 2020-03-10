@@ -504,10 +504,9 @@ async function main() {
     const client = new github.GitHub(repoToken);
 
     const config = JSON.parse(await fetchContent(client, configPath));
-    console.log(config);
 
     const usersToNotify = Object.entries(config)
-          .filter((_, labels) => labels.includes(label))
+          .filter((_, labels) => labels.indexOf(label) >= 0)
           .map((user, _) => user);
     console.log("Notifying users:", usersToNotify);
 
