@@ -521,7 +521,7 @@ This issue or pull request has been labeled "${label}".
 
 <details> <summary>Users Subscribed to "${label}"</summary>
 
-${usersToNotify.map(u => "* @" + u + "\n")}
+${usersToNotify.map(u => "* @" + u).join("\n")}
 
 </details>
 
@@ -529,6 +529,7 @@ To subscribe or unsubscribe from this label, edit the <code>${configPath}</code>
 
 [Learn more.](https://github.com/bytecodealliance/subscribe-to-label-action)
 `.trim();
+    console.log(`Creating comment:\n\n"""\n${message}\n"""`);
 
     await client.issues.createComment({
       owner: github.context.repo.owner,
