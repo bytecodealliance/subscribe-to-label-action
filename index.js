@@ -20,6 +20,10 @@ async function main() {
           .map(([user, _]) => user);
     console.log("Notifying users:", usersToNotify);
 
+    if (usersToNotify.length === 0) {
+      return;
+    }
+
     const message = `
 #### Subscribe to Label Action
 
