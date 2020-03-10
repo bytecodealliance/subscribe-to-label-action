@@ -493,8 +493,17 @@ const github = __webpack_require__(469);
 
 async function main() {
   try {
-    const issueNumber = (github.context.payload.issue || github.contet.payload.pull_request).number;
+    if (!github.context.payload.issue && !github.context.payload.pull_request) {
+      console.log("Could not get issue or pull request number. Exiting.");
+      return;
+    }
+    const issueNumber = (github.context.payload.issue || github.context.payload.pull_request).number;
+
     const label = github.context.payload.label.name;
+    if (!label) {
+      console.log("Could not get label. Exiting.");
+      return;
+    }
     console.log(`Processing label "${label}" on #${issueNumber}`);
 
     const configPath = core.getInput("configuration-path");
