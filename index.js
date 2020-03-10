@@ -1,21 +1,32 @@
-const core = require('@actions/core');
-const wait = require('./wait');
+const core = require("@actions/core");
+const github = require('@actions/github');
 
-
-// most @actions toolkit packages have async methods
 async function run() {
-  try { 
-    const ms = core.getInput('milliseconds');
-    console.log(`Waiting ${ms} milliseconds ...`)
+  try {
+    console.log(github.context.payload);
 
-    core.debug((new Date()).toTimeString())
-    await wait(parseInt(ms));
-    core.debug((new Date()).toTimeString())
+    // const repoToken = core.getInput("repo-token");
+    // const octokit = new github.GitHub(repoToken);
 
-    core.setOutput('time', new Date().toTimeString());
-  } 
-  catch (error) {
-    core.setFailed(error.message);
+    const users = core.getInput("users");
+    console.log(users);
+
+    // const { owner, repo } = github.context.repo;
+
+    // await octokit.issues.get({
+    //   owner,
+    //   repo,
+    //   issue_number
+    // });
+
+    // octokit.issues.createComment({
+    //   owner,
+    //   repo,
+    //   issue_number,
+    //   body
+    // });
+  } catch (error) {
+    core.setFailed(`Subscribe to label error: ${error.message}\n\nStack:\b${error.stack}`);
   }
 }
 
