@@ -506,8 +506,8 @@ async function main() {
     const config = JSON.parse(await fetchContent(client, configPath));
 
     const usersToNotify = Object.entries(config)
-          .filter((_, labels) => labels.indexOf(label) >= 0)
-          .map((user, _) => user);
+          .filter(([_, labels]) => labels.indexOf(label) >= 0)
+          .map(([user, _]) => user);
     console.log("Notifying users:", usersToNotify);
 
     const message = `
