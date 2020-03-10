@@ -31,7 +31,7 @@ This issue or pull request has been labeled "${label}".
 
 <details> <summary>Users Subscribed to "${label}"</summary>
 
-${usersToNotify.map(u => "* @" + u + "\n")}
+${usersToNotify.map(u => "* @" + u).join("\n")}
 
 </details>
 
