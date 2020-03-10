@@ -1,33 +1,61 @@
 const core = require("@actions/core");
 const github = require('@actions/github');
 
-async function run() {
+async function main() {
   try {
-    console.log(github.context.payload);
+    const issueNumber = (github.context.payload.issue || github.contet.payload.pull_request).number;
+    const label = github.context.payload.label.name;
+    console.log(`Processing label "${label}" on #${issueNumber}`);
 
-    // const repoToken = core.getInput("repo-token");
-    // const octokit = new github.GitHub(repoToken);
+    const configPath = core.getInput("configuration-path");
+    console.log("Reading subscription configuration from:", configPath);
 
-    const users = core.getInput("users");
-    console.log(users);
+    const repoToken = core.getInput("repo-token");
+    const client = new github.GitHub(repoToken);
 
-    // const { owner, repo } = github.context.repo;
+    const config = JSON.parse(await fetchContent(client, configPath));
 
-    // await octokit.issues.get({
-    //   owner,
-    //   repo,
-    //   issue_number
-    // });
+    const usersToNotify = Object.entries(config)
+          .filter((_, labels) => labels.includes(label))
+          .map((user, _) => user);
+    console.log("Notifying users:", usersToNotify);
 
-    // octokit.issues.createComment({
-    //   owner,
-    //   repo,
-    //   issue_number,
-    //   body
-    // });
+    const message = `
+#### Subscribe to Label Action
+
+This issue or pull request has been labeled "${label}".
+
+<details> <summary>Users Subscribed to "${label}"</summary>
+
+${usersToNotify.map(u => "* " + u + "\n")}
+
+</details>
+
+To subscribe or unsubscribe from this label, edit the <code>${configPath}</code> configuration file.
+
+[Learn more.](https://github.com/bytecodealliance/subscribe-to-label-action)
+`.trim();
+
+    await client.issues.createComment({
+      owner: github.context.repo.owner,
+      repo: github.context.repo.repo,
+      issue_number: issueNumber,
+      body: message,
+    });
   } catch (error) {
     core.setFailed(`Subscribe to label error: ${error.message}\n\nStack:\b${error.stack}`);
   }
 }
 
-run()
+async function fetchContent(client, path) {
+  const response = await client.repos.getContents({
+    owner: github.context.repo.owner,
+    repo: github.context.repo.repo,
+    ref: github.context.sha,
+    path,
+  });
+
+  return Buffer.from(response.data.content, response.data.encoding).toString();
+}
+
+main();

@@ -1,0 +1,4 @@
+{
+  "fitzgen": ["bugs", "documentation", "enhancement"],
+  "bytecodealliance-highfive": ["bugs"]
+}
