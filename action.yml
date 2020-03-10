@@ -4,9 +4,9 @@ inputs:
   repo-token:
     description: "GITHUB_TOKEN secret"
     required: true
-  users:
-    description: "A map from username to the list of labels they are subscribed to"
-    required: true
+  configuration-path:
+    description: "The path for the user and label configurations"
+    default: ".github/subscribe-to-label.json"
 runs:
   using: 'node12'
   main: 'dist/index.js'
