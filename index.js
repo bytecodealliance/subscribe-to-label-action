@@ -14,6 +14,7 @@ async function main() {
     const client = new github.GitHub(repoToken);
 
     const config = JSON.parse(await fetchContent(client, configPath));
+    console.log(config);
 
     const usersToNotify = Object.entries(config)
           .filter((_, labels) => labels.includes(label))
