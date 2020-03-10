@@ -13,6 +13,3 @@ jobs:
     - uses: bytecodealliance/subscribe-to-label-action@master
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
-        users:
-          fitzgen: ["bug", "help wanted"]
-          bytecodealliance-highfive: ["good first issue"]
