@@ -7,6 +7,9 @@ inputs:
   configuration-path:
     description: "The path for the user and label configurations"
     default: ".github/subscribe-to-label.json"
+  operations-per-run:
+    description: "The rough number of github API calls to do per background run. This is to avoid running up against rate limits."
+    default: 50
 runs:
   using: 'node12'
   main: 'dist/index.js'

@@ -10,10 +10,14 @@ Add a `.github/workflows/subscribe-to-label.yml` file to your repository:
 ```yaml
 name: "Subscribe to Label"
 on:
-  pull_request:
-    types: ["labeled"]
   issues:
     types: ["labeled"]
+  schedule:
+    # Run pull request triage every 5 minutes. Ideally, this would be on
+    # "labeled" types of pull request events, but that doesn't work if the pull
+    # request is from another fork. For example, see
+    # https://github.com/actions/labeler/issues/12
+    - cron: '*/5 * * * *'
 jobs:
   triage:
     runs-on: ubuntu-latest
