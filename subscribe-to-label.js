@@ -124,14 +124,11 @@ async function triagePullRequests(client, config, configPath) {
       });
       for await (const comments of client.paginate.iterator(listCommentsOpts)) {
         for (const comment of comments.data) {
-          console.log(`Checking whether comment by ${comment.user.login} is one we already made:`);
-          console.log(`"""\n${comment.body}\n"""`);
-
           // XXX: The `startsWith` check and the regex match need to be kept in
           // sync with the message that this bot comments!! Failure to do so
           // will result in lots of bot spam.
 
-          if (comment.user.login !== "github-actions" ||
+          if (comment.user.login !== "github-actions[bot]" ||
               !comment.body.startsWith("#### Subscribe to Label Action")) {
             continue;
           }
