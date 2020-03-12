@@ -47,6 +47,12 @@ ${usersToNotify.map(u => "* @" + u).join("\n")}
 `.trim());
   }
 
+  // If we didn't add any `<details>` then there weren't any users to notify for
+  // any of the labels, so don't leave a comment.
+  if (details.length === 0) {
+    return;
+  }
+
   // XXX: if you change the format of this message, make sure that we still
   // match it correctly in `triagePullRequests`!!
   const message = `
@@ -97,9 +103,9 @@ async function triagePullRequests(client, config, configPath) {
         return;
       }
 
-      console.log("Triaging PR #${pr.number} for labels which need a subscription comment");
+      console.log(`Triaging PR #${pr.number} for labels which need a subscription comment`);
 
-      const labelsToComment = new Set(...pr.labels.map(l => l.name));
+      const labelsToComment = new Set(pr.labels.map(l => l.name));
 
       // Iterate through all the existing comments in this PR and find our own
       // comments. For any comment we already made, remove the associated label
