@@ -493,12 +493,12 @@ const github = __webpack_require__(469);
 
 async function main() {
   try {
+    const repoToken = core.getInput("repo-token");
+    const client = new github.GitHub(repoToken);
+
     const configPath = core.getInput("configuration-path");
     console.log("Reading subscription configuration from:", configPath);
     const config = JSON.parse(await fetchContent(client, configPath));
-
-    const repoToken = core.getInput("repo-token");
-    const client = new github.GitHub(repoToken);
 
     if (github.context.payload.issue) {
       const issueNumber = github.context.payload.issue.number;
