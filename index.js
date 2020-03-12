@@ -15,7 +15,7 @@ async function main() {
       const labels = [github.context.payload.label.name];
       await processIssue(client, config, configPath, issueNumber, labels);
     } else {
-      await triagePullRequests(client, config);
+      await triagePullRequests(client, config, configPath);
     }
   } catch (error) {
     console.error(`Subscribe to label error: ${error.message}\n\nStack:\b${error.stack}`);
@@ -70,7 +70,7 @@ To subscribe or unsubscribe from this label, edit the <code>${configPath}</code>
   });
 }
 
-async function triagePullRequests(client, config) {
+async function triagePullRequests(client, config, configPath) {
   const operationsPerRun = parseInt(
     core.getInput("operations-per-run", {required: true})
   );
@@ -89,7 +89,7 @@ async function triagePullRequests(client, config) {
   });
   for await (const pulls of client.paginate.iterator(listPullsOpts)) {
     for (const pr of pulls.data) {
-      if (operationsPerRun <= 0) {
+      if (operationsLeft <= 0) {
         warn(
           "Executed the maximum operations for this run. Stopping now to avoid "
             + "hitting the github API rate limit."
@@ -126,15 +126,15 @@ async function triagePullRequests(client, config) {
           );
 
           // Get just the labels joined by ", " and with their quotes.
-          const joinedLabels = = startOfLabels.slice(0, startOfLabels.indexOf("\n"));
+          const joinedLabels = startOfLabels.slice(0, startOfLabels.indexOf("\n"));
 
           // Splt the labels, remove the quotes, and remove the corresponding
           // entry from `labelsToComment`.
-          const commentLabels = joinedLabels
+          joinedLabels
                 .split(", ")
                 .map(l => l.substring(1, l.length - 1))
                 .forEach(l => {
-                  console.log(`Already left a subscription comment for label "${commentLabel}"`);
+                  console.log(`Already left a subscription comment for label "${l}"`);
                   labelsToComment.delete(l)
                 });
         }
