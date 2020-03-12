@@ -18,7 +18,6 @@ test("test getUsersToNotifyForLabel", () => {
   assert.deepEqual(zzzUsers, []);
 });
 
-// shows how the runner will run a javascript action with env / stdout protocol
 test("test getCommentLabels", () => {
   const comment = `
 #### Subscribe to Label Action
@@ -38,4 +37,25 @@ To subscribe or unsubscribe from this label, edit the <code>.github/subscribe-to
 
   const labels = getCommentLabels(comment);
   assert.deepEqual(labels, ["fuzzing", "cranelift"]);
+});
+
+test("test getCommentLabels with single label", () => {
+  const comment = `
+#### Subscribe to Label Action
+
+This issue or pull request has been labeled: "fuzzing"
+
+<details> <summary>Users Subscribed to "fuzzing"</summary>
+
+* @fitzgen
+
+</details>
+
+To subscribe or unsubscribe from this label, edit the <code>.github/subscribe-to-label.json</code> configuration file.
+
+[Learn more.](https://github.com/bytecodealliance/subscribe-to-label-action)
+`.trim();
+
+  const labels = getCommentLabels(comment);
+  assert.deepEqual(labels, ["fuzzing"]);
 });
