@@ -4,6 +4,7 @@
   "description": "JavaScript Action Template",
   "main": "index.js",
   "scripts": {
+    "pretty": "prettier --write *.js",
     "lint": "eslint index.js",
     "package": "ncc build index.js -o dist",
     "test": "eslint *.js && jest"
@@ -30,6 +31,7 @@
   "devDependencies": {
     "@zeit/ncc": "^0.20.5",
     "eslint": "^6.3.0",
-    "jest": "^24.9.0"
+    "jest": "^24.9.0",
+    "prettier": "^2.0.4"
   }
 }

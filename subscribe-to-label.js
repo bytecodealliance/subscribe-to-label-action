@@ -18,8 +18,12 @@ async function main() {
       await triagePullRequests(client, config, configPath);
     }
   } catch (error) {
-    console.error(`Subscribe to label error: ${error.message}\n\nStack:\b${error.stack}`);
-    core.setFailed(`Subscribe to label error: ${error.message}\n\nStack:\b${error.stack}`);
+    console.error(
+      `Subscribe to label error: ${error.message}\n\nStack:\b${error.stack}`
+    );
+    core.setFailed(
+      `Subscribe to label error: ${error.message}\n\nStack:\b${error.stack}`
+    );
   }
 }
 exports.main = main;
@@ -27,8 +31,14 @@ exports.main = main;
 function makeMessage(userToLabel, labels, configPath) {
   // XXX: if you change the format of this message, make sure that we still
   // match it correctly in `triagePullRequests` and in `getCommentLabels`!!1!
-  let allUsers = Array.from(userToLabel.keys()).map(user => '@' + user).sort().join(', ');
-  let reasons = Array.from(userToLabel.entries()).map(([user, userLabels]) => `* ${user}: ${userLabels.sort().join(', ')}`).sort().join('\n');
+  let allUsers = Array.from(userToLabel.keys())
+    .map((user) => "@" + user)
+    .sort()
+    .join(", ");
+  let reasons = Array.from(userToLabel.entries())
+    .map(([user, userLabels]) => `* ${user}: ${userLabels.sort().join(", ")}`)
+    .sort()
+    .join("\n");
 
   return `
 #### Subscribe to Label Action
@@ -36,7 +46,10 @@ function makeMessage(userToLabel, labels, configPath) {
 cc ${allUsers}
 
 <details>
-This issue or pull request has been labeled: ${[...labels].map(l => '"' + l + '"').sort().join(", ")}
+This issue or pull request has been labeled: ${[...labels]
+    .map((l) => '"' + l + '"')
+    .sort()
+    .join(", ")}
 
 Thus the following users have been cc'd because of the following labels:
 
@@ -63,11 +76,11 @@ async function processIssue(client, config, configPath, issueNumber, labels) {
     }
 
     for (let user of usersToNotify) {
-        if (!userToLabel.has(user)) {
-            userToLabel.set(user, [label])
-        } else {
-            userToLabel.get(user).push(label);
-        }
+      if (!userToLabel.has(user)) {
+        userToLabel.set(user, [label]);
+      } else {
+        userToLabel.get(user).push(label);
+      }
     }
   }
 
@@ -96,10 +109,12 @@ exports.getUsersToNotifyForLabel = getUsersToNotifyForLabel;
 
 async function triagePullRequests(client, config, configPath) {
   const operationsPerRun = parseInt(
-    core.getInput("operations-per-run", {required: true})
+    core.getInput("operations-per-run", { required: true })
   );
   if (operationsPerRun <= 0) {
-    throw new Error(`operations-per-run must be greater than zero, got ${operationsPerRun}`);
+    throw new Error(
+      `operations-per-run must be greater than zero, got ${operationsPerRun}`
+    );
   }
   let operationsLeft = operationsPerRun;
 
@@ -109,22 +124,28 @@ async function triagePullRequests(client, config, configPath) {
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
     state: "open",
-    sort: "updated"
+    sort: "updated",
   });
   for await (const pulls of client.paginate.iterator(listPullsOpts)) {
     for (const pr of pulls.data) {
       if (operationsLeft <= 0) {
         warn(
-          "Executed the maximum operations for this run. Stopping now to avoid "
-            + "hitting the github API rate limit."
+          "Executed the maximum operations for this run. Stopping now to avoid " +
+            "hitting the github API rate limit."
         );
         return;
       }
 
-      console.log(`Triaging PR #${pr.number} for labels which need a subscription comment`);
+      console.log(
+        `Triaging PR #${pr.number} for labels which need a subscription comment`
+      );
 
-      const labelsToComment = new Set(pr.labels.map(l => l.name));
-      console.log(`PR #${pr.number} has these labels: ${[...labelsToComment].sort().join(", ")}`);
+      const labelsToComment = new Set(pr.labels.map((l) => l.name));
+      console.log(
+        `PR #${pr.number} has these labels: ${[...labelsToComment]
+          .sort()
+          .join(", ")}`
+      );
 
       // Iterate through all the existing comments in this PR and find our own
       // comments. For any comment we already made, remove the associated label
@@ -139,14 +160,16 @@ async function triagePullRequests(client, config, configPath) {
           // XXX: The `startsWith` check needs to be kept in sync with the
           // message that this bot comments!! Failure to do so will result in
           // lots of bot spam.
-          if (comment.user.login !== "github-actions[bot]" ||
-              !comment.body.startsWith("#### Subscribe to Label Action")) {
+          if (
+            comment.user.login !== "github-actions[bot]" ||
+            !comment.body.startsWith("#### Subscribe to Label Action")
+          ) {
             continue;
           }
 
           for (const l of getCommentLabels(comment.body)) {
             console.log(`Already left a subscription comment for label "${l}"`);
-            labelsToComment.delete(l)
+            labelsToComment.delete(l);
           }
         }
       }
@@ -170,9 +193,7 @@ function getCommentLabels(comment) {
 
   // Split the labels, remove the quotes, and remove the corresponding
   // entry from `labelsToComment`.
-  return joinedLabels
-    .split(", ")
-    .map(l => l.substring(1, l.length - 1));
+  return joinedLabels.split(", ").map((l) => l.substring(1, l.length - 1));
 }
 exports.getCommentLabels = getCommentLabels;
 
