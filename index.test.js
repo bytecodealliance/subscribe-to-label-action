@@ -1,6 +1,6 @@
 /*global test*/
 const assert = require("assert");
-const { getUsersToNotifyForLabel, getCommentLabels } = require("./subscribe-to-label");
+const { getUsersToNotifyForLabel, getCommentLabels, makeMessage } = require("./subscribe-to-label");
 
 test("test getUsersToNotifyForLabel", () => {
   const config = {
@@ -18,43 +18,58 @@ test("test getUsersToNotifyForLabel", () => {
   assert.deepEqual(zzzUsers, []);
 });
 
-test("test getCommentLabels", () => {
-  const comment = `
+test("test makeMessage", () => {
+  const expected = `
 #### Subscribe to Label Action
 
-This issue or pull request has been labeled: "fuzzing", "cranelift"
+cc @bnjbvr, @fitzgen
 
-<details> <summary>Users Subscribed to "fuzzing"</summary>
+<details>
+This issue or pull request has been labeled: "awesome", "cranelift", "fuzzing"
 
-* @fitzgen
+Thus the following users have been cc'd because of the following labels:
 
-</details>
+* bnjbvr: cranelift, fuzzing
+* fitzgen: fuzzing
 
 To subscribe or unsubscribe from this label, edit the <code>.github/subscribe-to-label.json</code> configuration file.
 
 [Learn more.](https://github.com/bytecodealliance/subscribe-to-label-action)
+</details>
 `.trim();
 
+  let userToLabel = new Map();
+  userToLabel.set('bnjbvr', ['fuzzing', 'cranelift']);
+  userToLabel.set('fitzgen', ['fuzzing']);
+
+  let labels = ['fuzzing', 'awesome', 'cranelift'];
+
+  let configPath = '.github/subscribe-to-label.json';
+
+  const observed = makeMessage(userToLabel, labels, configPath);
+
+  assert.equal(expected, observed);
+});
+
+test("test getCommentLabels", () => {
+  let userToLabel = new Map();
+  userToLabel.set('fitzgen', ['fuzzing']);
+  let providedLabels = ['fuzzing', 'cranelift'];
+  let configPath = '.github/subscribe-to-label.json';
+
+  const comment = makeMessage(userToLabel, providedLabels, configPath);
+
   const labels = getCommentLabels(comment);
-  assert.deepEqual(labels, ["fuzzing", "cranelift"]);
+  assert.deepEqual(labels, ["fuzzing", "cranelift"].sort());
 });
 
 test("test getCommentLabels with single label", () => {
-  const comment = `
-#### Subscribe to Label Action
+  let userToLabel = new Map();
+  userToLabel.set('fitzgen', ['fuzzing']);
+  let providedLabels = ['fuzzing'];
+  let configPath = '.github/subscribe-to-label.json';
 
-This issue or pull request has been labeled: "fuzzing"
-
-<details> <summary>Users Subscribed to "fuzzing"</summary>
-
-* @fitzgen
-
-</details>
-
-To subscribe or unsubscribe from this label, edit the <code>.github/subscribe-to-label.json</code> configuration file.
-
-[Learn more.](https://github.com/bytecodealliance/subscribe-to-label-action)
-`.trim();
+  const comment = makeMessage(userToLabel, providedLabels, configPath);
 
   const labels = getCommentLabels(comment);
   assert.deepEqual(labels, ["fuzzing"]);

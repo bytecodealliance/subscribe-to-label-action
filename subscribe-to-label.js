@@ -24,9 +24,34 @@ async function main() {
 }
 exports.main = main;
 
-async function processIssue(client, config, configPath, issueNumber, labels) {
-  const details = [];
+function makeMessage(userToLabel, labels, configPath) {
+  // XXX: if you change the format of this message, make sure that we still
+  // match it correctly in `triagePullRequests` and in `getCommentLabels`!!1!
+  let allUsers = Array.from(userToLabel.keys()).map(user => '@' + user).sort().join(', ');
+  let reasons = Array.from(userToLabel.entries()).map(([user, userLabels]) => `* ${user}: ${userLabels.sort().join(', ')}`).sort().join('\n');
 
+  return `
+#### Subscribe to Label Action
+
+cc ${allUsers}
+
+<details>
+This issue or pull request has been labeled: ${[...labels].map(l => '"' + l + '"').sort().join(", ")}
+
+Thus the following users have been cc'd because of the following labels:
+
+${reasons}
+
+To subscribe or unsubscribe from this label, edit the <code>${configPath}</code> configuration file.
+
+[Learn more.](https://github.com/bytecodealliance/subscribe-to-label-action)
+</details>
+`.trim();
+}
+exports.makeMessage = makeMessage;
+
+async function processIssue(client, config, configPath, issueNumber, labels) {
+  const userToLabel = new Map();
   for (const label of labels) {
     console.log(`Processing label "${label}" on #${issueNumber}`);
 
@@ -37,34 +62,21 @@ async function processIssue(client, config, configPath, issueNumber, labels) {
       continue;
     }
 
-    details.push(`
-<details> <summary>Users Subscribed to "${label}"</summary>
-
-${usersToNotify.map(u => "* @" + u).join("\n")}
-
-</details>
-`.trim());
+    for (let user of usersToNotify) {
+        if (!userToLabel.has(user)) {
+            userToLabel.set(user, [label])
+        } else {
+            userToLabel.get(user).push(label);
+        }
+    }
   }
 
-  // If we didn't add any `<details>` then there weren't any users to notify for
-  // any of the labels, so don't leave a comment.
-  if (details.length === 0) {
+  if (userToLabel.size === 0) {
     return;
   }
 
-  // XXX: if you change the format of this message, make sure that we still
-  // match it correctly in `triagePullRequests`!!
-  const message = `
-#### Subscribe to Label Action
+  const message = makeMessage(userToLabel, labels, configPath);
 
-This issue or pull request has been labeled: ${[...labels].map(l => '"' + l + '"').join(", ")}
-
-${details.join("\n")}
-
-To subscribe or unsubscribe from this label, edit the <code>${configPath}</code> configuration file.
-
-[Learn more.](https://github.com/bytecodealliance/subscribe-to-label-action)
-`.trim();
   console.log(`Creating comment:\n\n"""\n${message}\n"""`);
 
   await client.issues.createComment({
@@ -124,10 +136,9 @@ async function triagePullRequests(client, config, configPath) {
       });
       for await (const comments of client.paginate.iterator(listCommentsOpts)) {
         for (const comment of comments.data) {
-          // XXX: The `startsWith` check and the regex match need to be kept in
-          // sync with the message that this bot comments!! Failure to do so
-          // will result in lots of bot spam.
-
+          // XXX: The `startsWith` check needs to be kept in sync with the
+          // message that this bot comments!! Failure to do so will result in
+          // lots of bot spam.
           if (comment.user.login !== "github-actions[bot]" ||
               !comment.body.startsWith("#### Subscribe to Label Action")) {
             continue;
@@ -157,7 +168,7 @@ function getCommentLabels(comment) {
   // Get just the labels joined by ", " and with their quotes.
   const joinedLabels = startOfLabels.slice(0, startOfLabels.indexOf("\n"));
 
-  // Splt the labels, remove the quotes, and remove the corresponding
+  // Split the labels, remove the quotes, and remove the corresponding
   // entry from `labelsToComment`.
   return joinedLabels
     .split(", ")

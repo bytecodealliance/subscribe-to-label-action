@@ -1,4 +1,5 @@
 {
-  "fitzgen": ["bug", "documentation", "enhancement"],
+  "fitzgen": ["enhancement"],
+  "bnjbvr": ["bug", "documentation", "enhancement"],
   "bytecodealliance-highfive": ["bug"]
 }
