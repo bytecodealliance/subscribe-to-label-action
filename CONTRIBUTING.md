@@ -21,7 +21,7 @@ this major version:
 
 ```bash
 $ git checkout vX
-$ git merge master
+$ git merge main
 ```
 
 Next, Build the package and commit the built artifacts:
