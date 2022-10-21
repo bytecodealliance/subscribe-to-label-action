@@ -27,16 +27,19 @@ jobs:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
 ```
 
-Then, configure which users get @'d when for which labels in
+Then, configure which users or teams get @'d when for which labels in
 `.github/subscribe-to-label.json`:
 
 ```json
 {
     "example_user_1": ["bug", "help wanted"],
     "example_user_2": ["good first issue"],
-    "example_user_3": ["enhancement"]
+    "example_user_3": ["enhancement"],
+    "org/team_1": ["question"]
 }
 ```
+
+**Note**: When using the action to subscribe teams, you must use an account which is a member of the organization the team is in. The default `github-actions` bot does not have the permissions necessary to reference teams (see [this example](https://github.com/WordPress/openverse/issues/320)).
 
 ## Contributing
 
