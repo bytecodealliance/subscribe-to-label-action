@@ -11,5 +11,5 @@ inputs:
     description: "The rough number of github API calls to do per background run. This is to avoid running up against rate limits."
     default: 50
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'dist/index.js'
